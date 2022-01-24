@@ -1,11 +1,4 @@
-const mongoose = require('mongoose');
-mongoose.connect(process.env.DB_CONNECT);
-mongoose.connection.on('error', (err) => {
-    console.error(err);
-    console.log('%s MongoDB connection error. Please make sure MongoDB is running.');
-    process.exit();
-});
-const Server = require('../models/server.js');
+const Server = require.main.require('./models/server.js');
 
 const Discord = require('discord.js');
 
@@ -13,8 +6,8 @@ const fs = require('fs');
 
 
 const getAllCommands = () => {
-    return fs.readdirSync('./commands').map((folder) => {
-        return fs.readdirSync(`./commands/${folder}`).map((file) => {
+    return fs.readdirSync('./discord_handler/commands').map((folder) => {
+        return fs.readdirSync(`./discord_handler/commands/${folder}`).map((file) => {
             let command = require(`../commands/${folder}/${file}`);
             return command;
         });
