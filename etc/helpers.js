@@ -13,10 +13,10 @@ const fs = require('fs');
 
 
 const getAllCommands = () => {
-    return fs.readdirSync('./commands').map((file) => {
-        const commands = require(`../commands/${file}`);
-        return Object.keys(commands).map((key) => {
-            return commands[key];
+    return fs.readdirSync('./commands').map((folder) => {
+        return fs.readdirSync(`./commands/${folder}`).map((file) => {
+            let command = require(`../commands/${folder}/${file}`);
+            return command;
         });
     }).flat(1);
 };
@@ -35,23 +35,24 @@ const getServer = async (message) => {
 };
 module.exports.getServer = getServer;
 
-const getUser = async (server, message) => {
-    const user = server.users.find(user => user.id === message.author.id);
-    if (user) return user;
+const getUser = async (server, user) => {
+    const foundUser = server.users.find(user => user.id === user.id);
+    if (foundUser) return foundUser;
     const newUser = ({
-        id: message.author.id,
+        id: user.id,
+        username: user.username,
     });
     server.users.push(newUser);
     return newUser;
 };
 module.exports.getUser = getUser;
 
-const sendEmbed = async (channel, { title, description, timestamp, error }) => {
+const sendEmbed = async (channel, { title, colour, description, timestamp, error }) => {
     const myEmbed = new Discord.MessageEmbed()
-        .setColor(error ? global.errorColor : global.defaultColor)
+        .setColor(colour || error ? global.errorColor : global.defaultColor)
         .setTitle(title || 'ERROR: NO TITLE SET FOR EMBED')
-        .setURL(global.url)
         .setDescription(description || 'ERROR: NO DESCRIPTION SET FOR EMBED')
+        .setURL(global.url)
         // .setAuthor('Lawlzer', 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Neko_Wikipe-tan.svg/1200px-Neko_Wikipe-tan.svg.png')
         // .setThumbnail('https://i.imgur.com/AfFp7pu.png')
         // .addFields(
@@ -66,3 +67,18 @@ const sendEmbed = async (channel, { title, description, timestamp, error }) => {
     await channel.send({ embeds: [myEmbed] });
 };
 module.exports.sendEmbed = sendEmbed; 
+
+
+const sendImage = async ({channel, colour, title, description, imagePath, error}) => {
+    const attachment = new Discord.MessageAttachment(imagePath, `file-name.png`)
+    
+    const myEmbed = new Discord.MessageEmbed()
+        .setColor(colour || error ? global.errorColor : global.defaultColor)
+        .setTitle(title || 'ERROR: NO TITLE SET FOR IMAGE')
+        .setDescription(description || 'ERROR: NO DESCRIPTION SET FOR IMAGE')
+        .setImage(`attachment://file-name.png`)
+        .setURL(global.url)
+        
+    await channel.send({ embeds: [myEmbed], files: [attachment] });
+}
+module.exports.sendImage = sendImage;

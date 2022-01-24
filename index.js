@@ -4,12 +4,11 @@ console.log('Discord bot is in index.js');
 require('dotenv').config();
 require('./etc/globals.js'); 
 
-const fs = require('fs');
-
 const Discord = require('discord.js');
 const bot = new Discord.Client({ intents: ['GUILDS', 'GUILD_MESSAGES'] })
 
-const Helpers = require('./helpers/helpers.js'); 
+const Helpers = require('./etc/helpers.js');
+
 
 bot.on('ready', () => {
     // console.log(`Bot has started, with ${bot.users.size} users, in ${bot.channels.size} channels of ${bot.guilds.size} guilds.`);
@@ -28,15 +27,17 @@ bot.on('message', async message => {
     const commandArgs = message.content.toLowerCase().trim().replace(global.commandPrefix, '').split(' ').slice(1);
 
     const server = await Helpers.getServer(message); 
-    const user = await Helpers.getUser(server, message);
+    const user = await Helpers.getUser(server, message.author);
 
     const allCommands = Helpers.getAllCommands();
+
     for await ( const command of allCommands) { 
         const isCorrectCommand = command.aliases.some((alias) => alias.toLowerCase() === commandName);
         if (!isCorrectCommand) continue; 
         return await command.myFunc(bot, server, user, message, commandArgs);
     }
 
+    await Helpers.sendEmbed(message.channel, { title: 'Error', description: `Command: ${commandName} could not be found.`, timestamp: true});
     return;
 
     //     if (!message.member.roles.some(r => ['Administrator'].includes(r.name)))
