@@ -2,7 +2,13 @@
 console.log('Discord bot is in index.js');
 
 const Discord = require('discord.js');
-const bot = new Discord.Client({ intents: ['GUILDS', 'GUILD_MESSAGES'] })
+const bot = new Discord.Client({
+    partials: ['CHANNEL'],
+    intents: ['GUILDS', 'GUILD_MESSAGES',
+        Discord.Intents.FLAGS.DIRECT_MESSAGES,
+        Discord.Intents.FLAGS.DIRECT_MESSAGE_TYPING,
+    ],
+})
 
 const Helpers = require('./etc/helpers.js');
 
@@ -15,25 +21,27 @@ bot.on('ready', () => {
 
 bot.on('message', async message => {
     if (message.author.bot) return;
-    if (message.channel.type === 'dm') return message.channel.send('Please message me in a public channel!');
+    if (message.channel.type.toLowerCase() === 'dm') {
+        return await Helpers.sendEmbed(message.channel, { title: 'Error', description: 'This bot must be messaged in a public channel.', error: true });
+    }
 
     if (!message.content.toLowerCase().startsWith(global.commandPrefix)) return;
 
     const commandName = message.content.toLowerCase().trim().replace(global.commandPrefix, '').split(' ')[0];
     const commandArgs = message.content.toLowerCase().trim().replace(global.commandPrefix, '').split(' ').slice(1);
 
-    const server = await Helpers.getServer(message); 
+    const server = await Helpers.getServer(message);
     const user = await Helpers.getUser(server, message.author);
 
     const allCommands = Helpers.getAllCommands();
 
-    for await ( const command of allCommands) { 
+    for await (const command of allCommands) {
         const isCorrectCommand = command.aliases.some((alias) => alias.toLowerCase() === commandName);
-        if (!isCorrectCommand) continue; 
+        if (!isCorrectCommand) continue;
         return await command.myFunc(bot, server, user, message, commandArgs);
     }
 
-    await Helpers.sendEmbed(message.channel, { title: 'Error', description: `Command: ${commandName} could not be found.`, timestamp: true});
+    await Helpers.sendEmbed(message.channel, { title: 'Error', description: `Command: ${commandName} could not be found.`, timestamp: true, error: true });
     return;
 
     //     if (!message.member.roles.some(r => ['Administrator'].includes(r.name)))

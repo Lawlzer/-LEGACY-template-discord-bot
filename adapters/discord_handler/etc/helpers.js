@@ -6,8 +6,8 @@ const fs = require('fs');
 
 
 const getAllCommands = () => {
-    return fs.readdirSync('./discord_handler/commands').map((folder) => {
-        return fs.readdirSync(`./discord_handler/commands/${folder}`).map((file) => {
+    return fs.readdirSync('./adapters/discord_handler/commands').map((folder) => {
+        return fs.readdirSync(`./adapters/discord_handler/commands/${folder}`).map((file) => {
             let command = require(`../commands/${folder}/${file}`);
             return command;
         });
@@ -40,8 +40,9 @@ const getUser = async (server, user) => {
 };
 module.exports.getUser = getUser;
 
-const sendEmbed = async (channel, { title, colour, description, timestamp, error }) => {
-    const myEmbed = new Discord.MessageEmbed()
+
+const createEmbed = ({ title, colour, description, timestamp, error }) => {
+    const embed = new Discord.MessageEmbed()
         .setColor(colour || error ? global.errorColor : global.defaultColor)
         .setTitle(title || 'ERROR: NO TITLE SET FOR EMBED')
         .setDescription(description || 'ERROR: NO DESCRIPTION SET FOR EMBED')
@@ -57,21 +58,27 @@ const sendEmbed = async (channel, { title, colour, description, timestamp, error
         // .setImage('')
         .setTimestamp()
         .setFooter(global.footerText, global.footerImage);
-    await channel.send({ embeds: [myEmbed] });
+        return embed; 
+}
+module.exports.createEmbed = createEmbed;
+
+const sendEmbed = async (channel, { title, colour, description, timestamp, error }) => {
+    const embed = createEmbed({ title, colour, description, timestamp, error });
+    await channel.send({ embeds: [embed] });
 };
-module.exports.sendEmbed = sendEmbed; 
+module.exports.sendEmbed = sendEmbed;
 
 
-const sendImage = async ({channel, colour, title, description, imagePath, error}) => {
+const sendImage = async ({ channel, colour, title, description, imagePath, error }) => {
     const attachment = new Discord.MessageAttachment(imagePath, `file-name.png`)
-    
+
     const myEmbed = new Discord.MessageEmbed()
         .setColor(colour || error ? global.errorColor : global.defaultColor)
         .setTitle(title || 'ERROR: NO TITLE SET FOR IMAGE')
         .setDescription(description || 'ERROR: NO DESCRIPTION SET FOR IMAGE')
         .setImage(`attachment://file-name.png`)
         .setURL(global.url)
-        
+
     await channel.send({ embeds: [myEmbed], files: [attachment] });
 }
 module.exports.sendImage = sendImage;

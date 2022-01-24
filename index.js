@@ -7,5 +7,5 @@ mongoose.connect(process.env.DB_CONNECT, {
     useUnifiedTopology: true,
 });
 
-require.main.require('./discord_handler/discord_handler.js'); // does not require any functions called
+require.main.require('./adapters/discord_handler/index.js'); // does not need any functions called, just needs to be required
 
