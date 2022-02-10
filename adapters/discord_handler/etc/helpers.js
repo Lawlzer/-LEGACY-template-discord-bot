@@ -34,6 +34,7 @@ const getUser = async (server, user) => {
     const newUser = ({
         id: user.id,
         username: user.username,
+        tag: user.tag,
     });
     server.users.push(newUser);
     return newUser;
@@ -41,12 +42,12 @@ const getUser = async (server, user) => {
 module.exports.getUser = getUser;
 
 
-const createEmbed = ({ title, colour, description, timestamp, error }) => {
+const createEmbed = ({ title, colour, description, url, timestamp, error, }) => {
     const embed = new Discord.MessageEmbed()
         .setColor(colour || error ? global.errorColor : global.defaultColor)
         .setTitle(title || 'ERROR: NO TITLE SET FOR EMBED')
         .setDescription(description || 'ERROR: NO DESCRIPTION SET FOR EMBED')
-        .setURL(global.url)
+        .setURL(url || global.url)
         // .setAuthor('Lawlzer', 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Neko_Wikipe-tan.svg/1200px-Neko_Wikipe-tan.svg.png')
         // .setThumbnail('https://i.imgur.com/AfFp7pu.png')
         // .addFields(

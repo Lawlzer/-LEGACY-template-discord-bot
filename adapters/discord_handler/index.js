@@ -1,25 +1,25 @@
-// Invite Link for the bot: https://discordapp.com/oauth2/authorize?client_id=923498253297791016&scope=bot
+// Invite Link for the bot: https://discordapp.com/oauth2/authorize?client_id=6969696996969696969696969&scope=bot
 console.log('Discord bot is in index.js');
 
+global.stopDiscord = false; // Can be set to true to stop the bot from running. Used for having a bot running in two places. 
 const Discord = require('discord.js');
 const bot = new Discord.Client({
     partials: ['CHANNEL'],
     intents: ['GUILDS', 'GUILD_MESSAGES',
-        Discord.Intents.FLAGS.DIRECT_MESSAGES,
-        Discord.Intents.FLAGS.DIRECT_MESSAGE_TYPING,
-    ],
-})
+    Discord.Intents.FLAGS.DIRECT_MESSAGES,
+    Discord.Intents.FLAGS.DIRECT_MESSAGE_TYPING,
+],
+});
 
 const Helpers = require('./etc/helpers.js');
 
 bot.on('ready', () => {
-    // console.log(`Bot has started, with ${bot.users.size} users, in ${bot.channels.size} channels of ${bot.guilds.size} guilds.`);
-    // bot.user.setActivity(`Serving ${bot.guilds.size} servers`);
     console.log('Discord bot started!');
     bot.user.setActivity(global.discordBotActivity);
 });
 
-bot.on('message', async message => {
+bot.on('messageCreate', async message => {
+    if (global.stopDiscord) return; 
     if (message.author.bot) return;
     if (message.channel.type.toLowerCase() === 'dm') {
         return await Helpers.sendEmbed(message.channel, { title: 'Error', description: 'This bot must be messaged in a public channel.', error: true });
@@ -30,16 +30,20 @@ bot.on('message', async message => {
     const commandName = message.content.toLowerCase().trim().replace(global.commandPrefix, '').split(' ')[0];
     const commandArgs = message.content.toLowerCase().trim().replace(global.commandPrefix, '').split(' ').slice(1);
 
-    const server = await Helpers.getServer(message);
-    const user = await Helpers.getUser(server, message.author);
+    const user = await Helpers.getUser(message.author);
 
     const allCommands = Helpers.getAllCommands();
 
     for await (const command of allCommands) {
         const isCorrectCommand = command.aliases.some((alias) => alias.toLowerCase() === commandName);
         if (!isCorrectCommand) continue;
-        return await command.myFunc(bot, server, user, message, commandArgs);
-    }
+        
+        for (const requirement of command.requirements) { 
+            const requirementSuccess = await requirement(bot, user, message, commandArgs);
+            if (!requirementSuccess) return; // automatically sends an error message from the requirement
+        };
+        return await command.myFunc(bot, user, message, commandArgs);
+    };
 
     await Helpers.sendEmbed(message.channel, { title: 'Error', description: `Command: ${commandName} could not be found.`, timestamp: true, error: true });
     return;
@@ -79,3 +83,5 @@ bot.on('message', async message => {
 });
 
 bot.login(process.env.DISCORD_TOKEN);
+
+

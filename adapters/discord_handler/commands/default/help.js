@@ -1,4 +1,5 @@
 const Helpers = require('../../etc/helpers.js');
+const Requirements = require('../../etc/requirements.js');
 
 const Discord = require('discord.js');
 
@@ -8,7 +9,7 @@ module.exports = {
     description: 'help help',
     examples: ['help', 'help help'],
     requirements: [],
-    async myFunc(bot, server, user, message, args) {
+    async myFunc(bot, user, message, args) {
         const allCommands = Helpers.getAllCommands();
 
         if (args.length > 0) {
@@ -26,6 +27,7 @@ module.exports = {
         
         let text = '\n'; 
         allCommands.map((command) => {
+            if (command.hidden) return; // Some hidden commands
             text += `
                 **${command.aliases[0]}**
                 Summary: ${command.summary}

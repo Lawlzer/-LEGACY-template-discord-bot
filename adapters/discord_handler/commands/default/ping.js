@@ -1,4 +1,8 @@
-const Helpers = require('../../etc/helpers.js');
+const Helpers = {
+    ...require('@lawlzer/helpers'),
+    ...require('../../etc/helpers.js'),
+};
+const Requirements = require('../../etc/requirements.js'); 
 
 const Discord = require('discord.js');
 
