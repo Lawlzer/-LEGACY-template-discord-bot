@@ -30,7 +30,7 @@ bot.on('messageCreate', async (message) => {
 	if (!message.content.toLowerCase().startsWith(server.commandPrefix)) return;
 	
 	const server = await Helpers.getServer(message);
-	const commandName = message.content.toLowerCase().trim().replace(server.commandPrefix, '').split(' ')[0];
+	const commandName = message.content.toLowerCase().trim().replace(server.commandPrefix, '').split(' ')[0].trim();
 	const commandArgs = message.content.toLowerCase().trim().replace(server.commandPrefix, '').split(' ').slice(1);
 
 	const user = await Helpers.getUser(message.author);
