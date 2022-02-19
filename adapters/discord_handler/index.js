@@ -27,10 +27,11 @@ bot.on('messageCreate', async (message) => {
 		return;
 	}
 
-	if (!message.content.toLowerCase().startsWith(global.commandPrefix)) return;
-
-	const commandName = message.content.toLowerCase().trim().replace(global.commandPrefix, '').split(' ')[0];
-	const commandArgs = message.content.toLowerCase().trim().replace(global.commandPrefix, '').split(' ').slice(1);
+	if (!message.content.toLowerCase().startsWith(server.commandPrefix)) return;
+	
+	const server = await Helpers.getServer(message);
+	const commandName = message.content.toLowerCase().trim().replace(server.commandPrefix, '').split(' ')[0];
+	const commandArgs = message.content.toLowerCase().trim().replace(server.commandPrefix, '').split(' ').slice(1);
 
 	const user = await Helpers.getUser(message.author);
 
@@ -41,10 +42,10 @@ bot.on('messageCreate', async (message) => {
 		if (!isCorrectCommand) continue;
 
 		for (const requirement of command.requirements) {
-			const requirementSuccess = await requirement(bot, user, message, commandArgs);
+			const requirementSuccess = await requirement(bot, server, user, message, commandArgs);
 			if (!requirementSuccess) return; // automatically sends an error message from the requirement
 		}
-		return await command.myFunc(bot, user, message, commandArgs);
+		return await command.myFunc(bot, server, user, message, commandArgs);
 	}
 
 	await Helpers.sendEmbed(message.channel, { title: 'Error', description: `Command: ${commandName} could not be found.`, timestamp: true, error: true });
